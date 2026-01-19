@@ -1,12 +1,6 @@
-import 'package:equatable/equatable.dart';
-
-abstract class NewProductsEvent extends Equatable {
+abstract class NewProductsEvent {
   const NewProductsEvent();
 }
 
 /// جلب المنتجات الجديدة
-class GetNewProductsEvent extends NewProductsEvent {
-  @override
-  // TODO: implement props
-  List<Object?> get props => throw UnimplementedError();
-}
+class GetNewProductsEvent extends NewProductsEvent {}
