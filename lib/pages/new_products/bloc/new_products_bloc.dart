@@ -7,10 +7,10 @@ import 'new_products_state.dart';
 
 class NewProductsBloc extends Bloc<NewProductsEvent, NewProductsState> {
   NewProductsBloc() : super(const NewProductsState()) {
-    on<GetNewProductsEvent>(_fetchNewProducts);
+    on<GetNewProductsEvent>(_getNewProducts);
   }
   NewProductsApi api = NewProductsApi();
-  Future<void> _fetchNewProducts(
+  Future<void> _getNewProducts(
     GetNewProductsEvent event,
     Emitter<NewProductsState> emit,
   ) async {

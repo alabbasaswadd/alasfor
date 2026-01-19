@@ -2,7 +2,12 @@ import 'package:alasfor/core/constants/app_images.dart';
 import 'package:alasfor/core/constants/app_text.dart';
 import 'package:alasfor/core/widgets/custom_app_bar.dart';
 import 'package:alasfor/pages/new_products/bloc/new_products_bloc.dart';
+import 'package:alasfor/pages/new_products/bloc/new_products_event.dart';
+import 'package:alasfor/pages/new_products/bloc/new_products_state.dart';
+import 'package:alasfor/pages/new_products/model/products_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class NewProductsScreen extends StatefulWidget {
@@ -17,7 +22,7 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
   @override
   void initState() {
     bloc = NewProductsBloc();
-    // bloc.getNewProducts();
+    bloc.add(GetNewProductsEvent());
     super.initState();
   }
 
@@ -44,63 +49,41 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
   }
 
   Widget _buildProductsGrid() {
-    final products = [
-      ProductData(
-        name: 'رز أسباني',
-        description:
-            'لما يكون الأكل زاكي... الاختيار أكيد رز أسباني من العصفور',
-        imageUrl: AppImages.camolino2,
-        rating: 4.5,
-      ),
-      ProductData(
-        name: 'بقوليات العصقور',
-        description: 'الطعم الأصيل، الجودة العالية، والفائدة بكل لقمة',
-        imageUrl: AppImages.legumes,
-        rating: 4.8,
-      ),
-      ProductData(
-        name: 'شاي العصفصور',
-        description:
-            'استمتعوا بكوب شاي أصيل غني بالنكهة والرائحة، ليعدل مزاجكم',
-        imageUrl: AppImages.tea,
-        rating: 4.3,
-      ),
-      ProductData(
-        name: 'حلاوة بالفستق',
-        description: 'طعم غني بالفستق... متعة بكل لقمة مذاق أصيل، وفستق فاخر',
-        imageUrl: AppImages.halawa,
-        rating: 4.6,
-      ),
-      ProductData(
-        name: 'تمر العصفور',
-        description: 'الطعم اللي بيجمع بين النكهة الأصيلة والجودة العالية!',
-        imageUrl: AppImages.dates,
-        rating: 4.7,
-      ),
-      ProductData(
-        name: 'زعتر العصفور الأحمر',
-        description: 'الصلصة الطازجة اللذيذة التي تصنع طبقاً شهياً',
-        imageUrl: AppImages.zattar,
-        rating: 4.4,
-      ),
-    ];
-
-    return MasonryGridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-      ),
-      mainAxisSpacing: 25,
-      crossAxisSpacing: 12,
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        return _buildProductCard(products[index], index);
+    return BlocBuilder<NewProductsBloc, NewProductsState>(
+      bloc: bloc,
+      builder: (context, state) {
+        if (state.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state.isError) {
+          return Center(
+            child: AppText.body(state.errorMessage, color: Colors.red),
+          );
+        } else if (state.products.isEmpty) {
+          return Center(
+            child: AppText.body(
+              'لا توجد منتجات جديدة حالياً.',
+              color: Colors.grey,
+            ),
+          );
+        }
+        return MasonryGridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+          ),
+          mainAxisSpacing: 25,
+          crossAxisSpacing: 12,
+          itemCount: state.products.length,
+          itemBuilder: (context, index) {
+            return _buildProductCard(state.products[index], index);
+          },
+        );
       },
     );
   }
 
-  Widget _buildProductCard(ProductData product, int index) {
+  Widget _buildProductCard(ProductsModel product, int index) {
     final bool isRightColumn = index % 2 == 0;
 
     return Transform.translate(
@@ -130,11 +113,16 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
                   ),
-                  child: Image.asset(
-                    product.imageUrl,
+                  child: CachedNetworkImage(
+                    imageUrl: product.image!,
+                    height: 180,
                     width: double.infinity,
-                    height: 150,
                     fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => Container(
+                      height: 180,
+                      color: Colors.grey[300],
+                      child: const Center(child: Icon(Icons.error)),
+                    ),
                   ),
                 ),
 
@@ -176,7 +164,7 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText.body(
-                    product.name,
+                    product.title ?? '',
                     fontWeight: FontWeight.w600,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -185,7 +173,7 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
                   const SizedBox(height: 6),
 
                   AppText.small(
-                    product.description,
+                    product.description ?? "",
                     color: Colors.grey[600],
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
