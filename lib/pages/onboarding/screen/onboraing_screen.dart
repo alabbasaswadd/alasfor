@@ -1,133 +1,137 @@
 import 'package:alasfor/core/constants/app_colors.dart';
 import 'package:alasfor/core/constants/app_images.dart';
 import 'package:alasfor/core/constants/app_text.dart';
-import 'package:alasfor/core/services/onboarding_service.dart';
 import 'package:alasfor/main.dart';
+import 'package:alasfor/pages/onboarding/bloc/onboarding_bloc.dart';
+import 'package:alasfor/pages/onboarding/bloc/onboarding_event.dart';
+import 'package:alasfor/pages/onboarding/bloc/onboarding_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+  static const String id = '/onboarding';
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+  late OnboardingBloc _bloc;
   final PageController _pageController = PageController();
-  int _currentPage = 0;
 
-  final List<OnboardingContent> _pages = [
-    OnboardingContent(
-      title: 'من هنا تبدأ رحلتك مع منتجات\nالعصفور',
-      subtitle: 'جودة نعرفها، ونشاركها معك بكل ثقة.',
-      imagePath: AppImages.camolino2,
-    ),
-    OnboardingContent(
-      title: 'اكتشف مجموعة واسعة من\nالمنتجات',
-      subtitle: 'منتجات طازجة وعالية الجودة في متناول يدك.',
-      imagePath: AppImages.camolino2,
-    ),
-    OnboardingContent(
-      title: 'تسوق بسهولة واحصل على\nأفضل العروض',
-      subtitle: 'توصيل سريع وآمن إلى باب منزلك.',
-      imagePath: 'assets/images/product3.png',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _bloc = OnboardingBloc();
+    _bloc.add(const InitOnboardingEvent());
+  }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _bloc.close();
     super.dispose();
   }
 
   void _onPageChanged(int index) {
-    setState(() {
-      _currentPage = index;
-    });
+    _bloc.add(PageChangedEvent(index));
   }
 
-  Future<void> _nextPage() async {
-    if (_currentPage < _pages.length - 1) {
+  void _nextPage() {
+    final state = _bloc.state;
+    if (state.currentPage < state.pages.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    } else {
-      // Mark onboarding as completed and navigate to main screen
-      await OnboardingService.setOnboardingCompleted();
-      if (mounted) {
-        navigatorKey.currentContext?.go('/main');
-      }
     }
+    _bloc.add(const NextPageEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Background Design
-          CustomPaint(
-            size: Size(
-              MediaQuery.of(context).size.width,
-              MediaQuery.of(context).size.height,
-            ),
-            painter: OnboardingBackgroundPainter(),
-          ),
-          // Content
-          SafeArea(
-            child: Column(
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocConsumer<OnboardingBloc, OnboardingState>(
+        listener: (context, state) {
+          if (state.shouldNavigateToMain) {
+            navigatorKey.currentContext?.go('/main');
+          }
+        },
+        builder: (context, state) {
+          if (state.pages.isEmpty) {
+            return const Scaffold(
+              backgroundColor: AppColors.primary,
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          return Scaffold(
+            body: Stack(
               children: [
-                SizedBox(height: 16),
-                // Logo
-                Image.asset(AppImages.logo),
-                // PageView
-                Expanded(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    itemCount: _pages.length,
-                    itemBuilder: (context, index) {
-                      return OnboardingPage(
-                        content: _pages[index],
-                        pageIndex: index,
-                      );
-                    },
+                // Background Design
+                CustomPaint(
+                  size: Size(
+                    MediaQuery.of(context).size.width,
+                    MediaQuery.of(context).size.height,
+                  ),
+                  painter: OnboardingBackgroundPainter(),
+                ),
+                // Content
+                SafeArea(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      // Logo
+                      Image.asset(AppImages.logo),
+                      // PageView
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          onPageChanged: _onPageChanged,
+                          itemCount: state.pages.length,
+                          itemBuilder: (context, index) {
+                            return OnboardingPage(
+                              content: state.pages[index],
+                              pageIndex: index,
+                            );
+                          },
+                        ),
+                      ),
+                      // Page Indicators
+                      _buildPageIndicators(state),
+                      const SizedBox(height: 24),
+                      // Start Button
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: _buildStartButton(state),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
                   ),
                 ),
-
-                // Page Indicators
-                _buildPageIndicators(),
-
-                const SizedBox(height: 24),
-
-                // Start Button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                  child: _buildStartButton(),
-                ),
-                const SizedBox(height: 32),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildPageIndicators() {
+  Widget _buildPageIndicators(OnboardingState state) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
-        _pages.length,
+        state.pages.length,
         (index) => AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: _currentPage == index ? 24 : 8,
+          width: state.currentPage == index ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: _currentPage == index
+            color: state.currentPage == index
                 ? AppColors.white
                 : AppColors.white.withOpacity(0.4),
             borderRadius: BorderRadius.circular(4),
@@ -137,12 +141,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildStartButton() {
+  Widget _buildStartButton(OnboardingState state) {
+    final isLastPage = state.currentPage == state.pages.length - 1;
+
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: _nextPage,
+        onPressed: state.isLoading ? null : _nextPage,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.darkGray,
           foregroundColor: AppColors.white,
@@ -151,27 +157,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           elevation: 0,
         ),
-        child: AppText.custom(
-          _currentPage == _pages.length - 1 ? 'ابدأ الآن' : 'التالي',
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: AppColors.white,
-        ),
+        child: state.isLoading
+            ? const CircularProgressIndicator(color: AppColors.white)
+            : AppText.custom(
+                isLastPage ? 'ابدأ الآن' : 'التالي',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.white,
+              ),
       ),
     );
   }
-}
-
-class OnboardingContent {
-  final String title;
-  final String subtitle;
-  final String imagePath;
-
-  OnboardingContent({
-    required this.title,
-    required this.subtitle,
-    required this.imagePath,
-  });
 }
 
 class OnboardingPage extends StatelessWidget {
@@ -215,9 +211,7 @@ class OnboardingPage extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(height: 40),
-
         // Text Content
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),

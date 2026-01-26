@@ -17,30 +17,30 @@ import 'pages/startup_screen/screen/startup_screen.dart';
 /// 3. After completing onboarding → Navigate to '/main'
 final GoRouter appRouter = GoRouter(
   navigatorKey: navigatorKey,
-  initialLocation: '/startup',
+  initialLocation: StartupScreen.id,
   routes: [
     // Startup/Splash Screen
     GoRoute(
-      path: '/startup',
+      path: StartupScreen.id,
       name: 'startup',
       builder: (context, state) => const StartupScreen(),
     ),
 
     // Onboarding Screen (shown only once)
     GoRoute(
-      path: '/onboarding',
+      path: OnboardingScreen.id,
       name: 'onboarding',
       builder: (context, state) => const OnboardingScreen(),
     ),
 
     // Main Screen (with custom AppBar and Bottom Navigation)
     GoRoute(
-      path: '/main',
+      path: MainScreen.id,
       name: 'main',
       builder: (context, state) => const MainScreen(),
     ),
     GoRoute(
-      path: '/notifications',
+      path: NotificationsScreen.id,
       name: 'notifications',
       builder: (context, state) => const NotificationsScreen(),
       routes: [],

@@ -5,57 +5,75 @@ import 'package:alasfor/core/widgets/custom_app_bar.dart';
 import 'package:alasfor/core/widgets/custom_bottom_navigation_bar.dart';
 import 'package:alasfor/core/widgets/stories_section.dart';
 import 'package:alasfor/pages/home/screen/home_screen.dart';
+import 'package:alasfor/pages/main/bloc/main_bloc.dart';
+import 'package:alasfor/pages/main/bloc/main_event.dart';
+import 'package:alasfor/pages/main/bloc/main_state.dart';
 import 'package:alasfor/pages/new_products/screen/new_products_screen.dart';
 import 'package:alasfor/pages/scanner/screen/scanner_screen.dart';
 import 'package:alasfor/pages/winners/screen/winners_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Main screen of the application with custom wave AppBar
 /// and curved bottom navigation bar.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+  static const String id = '/main';
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 2;
+  late MainBloc _bloc;
 
   // Pages for each navigation tab
   final List<Widget> _pages = [
-    _ProfilePage(),
-    WinnersScreen(),
-    HomeScreen(),
-    NewProductsScreen(),
-    ScannerScreen(),
+    const _ProfilePage(),
+    const WinnersScreen(),
+    const HomeScreen(),
+    const NewProductsScreen(),
+    const ScannerScreen(),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _bloc = MainBloc();
+    _bloc.add(const InitMainEvent());
+  }
+
+  @override
+  void dispose() {
+    _bloc.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Show stories in app bar only on home tab (index 2)
-    final bool isHomeTab = _currentIndex == 2;
-    // Show search field in app bar only on new products tab (index 3)
-    final bool isNewProductsTab = _currentIndex == 3;
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocBuilder<MainBloc, MainState>(
+        builder: (context, state) {
+          // Determine child widget for app bar based on current tab
+          Widget? appBarChild;
+          if (state.isHomeTab) {
+            appBarChild = const StoriesSection();
+          } else if (state.isNewProductsTab) {
+            appBarChild = const AppBarSearchField();
+          }
 
-    // Determine child widget for app bar based on current tab
-    Widget? appBarChild;
-    if (isHomeTab) {
-      appBarChild = const StoriesSection();
-    } else if (isNewProductsTab) {
-      appBarChild = const AppBarSearchField();
-    }
-
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: CustomAppBar(child: appBarChild),
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          return Scaffold(
+            backgroundColor: AppColors.white,
+            appBar: CustomAppBar(child: appBarChild),
+            body: IndexedStack(index: state.currentIndex, children: _pages),
+            bottomNavigationBar: CustomBottomNavigationBar(
+              currentIndex: state.currentIndex,
+              onTap: (index) {
+                _bloc.add(ChangeTabEvent(index));
+              },
+            ),
+          );
         },
       ),
     );

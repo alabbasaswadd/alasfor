@@ -1,6 +1,5 @@
-import 'package:alasfor/core/constants/app_images.dart';
+import 'package:alasfor/core/constants/app_colors.dart';
 import 'package:alasfor/core/constants/app_text.dart';
-import 'package:alasfor/core/widgets/custom_app_bar.dart';
 import 'package:alasfor/pages/new_products/bloc/new_products_bloc.dart';
 import 'package:alasfor/pages/new_products/bloc/new_products_event.dart';
 import 'package:alasfor/pages/new_products/bloc/new_products_state.dart';
@@ -21,9 +20,15 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
   late NewProductsBloc bloc;
   @override
   void initState() {
+    super.initState();
     bloc = NewProductsBloc();
     bloc.add(GetNewProductsEvent());
-    super.initState();
+  }
+
+  @override
+  void dispose() {
+    bloc.close();
+    super.dispose();
   }
 
   @override
@@ -31,16 +36,12 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
-            AppText.large('أحدث المنتجات'),
-
-            const SizedBox(height: 16),
-
-            // Products grid
+            AppText.xlarge('أحدث المنتجات'),
+            const SizedBox(height: 24),
             _buildProductsGrid(),
           ],
         ),
@@ -101,10 +102,9 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
           ],
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // مهم جدًا مع Masonry
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // الصورة + زر المفضلة
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -117,7 +117,7 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
                     imageUrl: product.image!,
                     height: 180,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                     errorWidget: (context, url, error) => Container(
                       height: 180,
                       color: Colors.grey[300],
@@ -126,7 +126,6 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
                   ),
                 ),
 
-                // زر المفضلة
                 Positioned(
                   top: -18,
                   left: 8,
@@ -146,8 +145,8 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
                         ],
                       ),
                       child: Icon(
-                        Icons.favorite,
-                        color: const Color(0xFFE41E26),
+                        Icons.favorite_outline,
+                        color: AppColors.primary,
                         size: 26,
                       ),
                     ),
@@ -156,11 +155,10 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
               ],
             ),
 
-            // تفاصيل المنتج
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
-                mainAxisSize: MainAxisSize.min, // مهم
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText.body(
@@ -188,19 +186,4 @@ class _NewProductsScreenState extends State<NewProductsScreen> {
       ),
     );
   }
-}
-
-// Product data model
-class ProductData {
-  final String name;
-  final String description;
-  final String imageUrl;
-  final double rating;
-
-  ProductData({
-    required this.name,
-    required this.description,
-    required this.imageUrl,
-    required this.rating,
-  });
 }

@@ -141,7 +141,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
-          gradient: AppColors.goldGradient,
+          gradient: LinearGradient(
+            colors: [
+              AppColors.secondary,
+              AppColors.goldDark,
+              AppColors.secondary,
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
