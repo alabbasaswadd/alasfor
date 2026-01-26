@@ -27,15 +27,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   late MainBloc _bloc;
 
-  // Pages for each navigation tab
-  final List<Widget> _pages = [
-    const _ProfilePage(),
-    const WinnersScreen(),
-    const HomeScreen(),
-    const NewProductsScreen(),
-    const ScannerScreen(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -49,33 +40,62 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
+  /// Build page based on current index - loads only when needed
+  Widget _buildCurrentPage(int index) {
+    switch (index) {
+      case 0:
+        return const _ProfilePage();
+      case 1:
+        return const WinnersScreen();
+      case 2:
+        return const HomeScreen();
+      case 3:
+        return const NewProductsScreen();
+      case 4:
+        return const ScannerScreen();
+      default:
+        return const NewProductsScreen();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _bloc,
-      child: BlocBuilder<MainBloc, MainState>(
-        builder: (context, state) {
-          // Determine child widget for app bar based on current tab
-          Widget? appBarChild;
-          if (state.isHomeTab) {
-            appBarChild = const StoriesSection();
-          } else if (state.isNewProductsTab) {
-            appBarChild = const AppBarSearchField();
-          }
+    return BlocBuilder<MainBloc, MainState>(
+      bloc: _bloc,
+      builder: (context, state) {
+        // Determine child widget for app bar based on current tab
+        Widget? appBarChild;
+        if (state.isHomeTab) {
+          appBarChild = const StoriesSection();
+        } else if (state.isNewProductsTab) {
+          appBarChild = const AppBarSearchField();
+        }
 
-          return Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: CustomAppBar(child: appBarChild),
-            body: IndexedStack(index: state.currentIndex, children: _pages),
-            bottomNavigationBar: CustomBottomNavigationBar(
-              currentIndex: state.currentIndex,
-              onTap: (index) {
-                _bloc.add(ChangeTabEvent(index));
-              },
-            ),
-          );
-        },
-      ),
+        return Scaffold(
+          extendBody: true,
+          backgroundColor: AppColors.white,
+          appBar: CustomAppBar(child: appBarChild),
+          body: Stack(
+            children: [
+              // 🔹 محتوى الصفحة
+              Positioned.fill(child: _buildCurrentPage(state.currentIndex)),
+
+              // 🔹 Bottom Navigation Bar (محاكاة)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: CustomBottomNavigationBar(
+                  currentIndex: state.currentIndex,
+                  onTap: (index) {
+                    _bloc.add(ChangeTabEvent(index));
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -43,15 +43,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    const arcHeight = 25.0;
+    const arcHeight = 30.0;
     final totalHeight = 60.0 + bottomPadding + arcHeight;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Symmetrical positioning values
-    const outerPosition = 0.02; // Same for both sides
-    const innerPosition = 0.22; // Same for both sides
-    const outerBottom = 4.0; // Same height for outer icons
-    const innerBottom = 25.0; // Same height for inner icons
+    // Symmetrical positioning values - icons follow the arc curve
+    const outerPosition = 0.04; // Same for both sides
+    const innerPosition = 0.24; // Same for both sides
+    const outerBottom = 12.0; // Icons at the lower edges of the arc
+    const innerBottom = 28.0; // Icons higher up on the arc slope
 
     return SizedBox(
       height: totalHeight,
@@ -85,7 +85,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 Positioned(
                   left: 0,
                   right: 0,
-                  top: -15,
+                  top: -12,
                   child: Center(child: _buildCenterButton()),
                 ),
 

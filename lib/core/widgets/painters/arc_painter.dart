@@ -116,11 +116,12 @@ class ArcNavBarClipper extends CustomClipper<Path> {
 }
 
 /// A smoother arch painter with more control over the curve.
+/// Creates a symmetric arc shape that curves upward in the center.
 class SmoothArchPainter extends CustomPainter {
   /// The color of the navigation bar.
   final Color color;
 
-  /// The height of the arch.
+  /// The height of the arch (how high the center rises).
   final double arcHeight;
 
   /// Whether to draw a shadow.
@@ -140,30 +141,22 @@ class SmoothArchPainter extends CustomPainter {
 
     final path = Path();
 
+    // The baseline where the sides start (symmetric)
+    final sideHeight = arcHeight * 1.5;
+
     // Start from bottom-left
     path.moveTo(0, size.height);
 
-    // Line up left side
-    path.lineTo(0, arcHeight * 1.2);
+    // Line up left side to the arc start point
+    path.lineTo(0, sideHeight);
 
-    // First curve (left side going up)
-    path.cubicTo(
-      size.width * 0.3,
-      arcHeight * 1.8, // First control point
-      size.width * 0.35,
-      0, // Second control point
-      size.width * 0.5,
-      0, // End at top center
-    );
-
-    // Second curve (right side going down)
-    path.cubicTo(
-      size.width * 0.65,
-      0, // First control point
-      size.width * 0.8,
-      arcHeight * 1.2, // Second control point
-      size.width,
-      arcHeight * 2.2, // End at right side
+    // Create a smooth symmetric arc using a single quadratic bezier
+    // This creates a clean arc shape that rises in the center
+    path.quadraticBezierTo(
+      size.width / 2, // Control point X (center)
+      -arcHeight * 0.8, // Control point Y (above top, creates the arc peak)
+      size.width, // End point X (right side)
+      sideHeight, // End point Y (same as left side for symmetry)
     );
 
     // Line down right side
@@ -174,7 +167,7 @@ class SmoothArchPainter extends CustomPainter {
 
     // Draw shadow
     if (showShadow) {
-      canvas.drawShadow(path, Colors.black26, 10.0, false);
+      canvas.drawShadow(path, Colors.black26, 12.0, false);
     }
 
     canvas.drawPath(path, paint);

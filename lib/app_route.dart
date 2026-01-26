@@ -3,7 +3,6 @@ import 'package:alasfor/main.dart';
 import 'package:alasfor/pages/main/screen/main_screen.dart';
 import 'package:alasfor/pages/notifications/screen/notifications_screen.dart';
 import 'package:alasfor/pages/onboarding/screen/onboraing_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'pages/startup_screen/screen/startup_screen.dart';
 

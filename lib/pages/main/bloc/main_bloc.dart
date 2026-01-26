@@ -9,26 +9,20 @@ class MainBloc extends BaseBloc<MainEvent, MainState> {
     on<ChangeTabEvent>(_changeTab);
   }
 
-  Future<void> _init(
-    InitMainEvent event,
-    Emitter<MainState> emit,
-  ) async {
-    emit(state.copyWith(
-      currentIndex: 3,
-      isHomeTab: false,
-      isNewProductsTab: true,
-    ));
+  Future<void> _init(InitMainEvent event, Emitter<MainState> emit) async {
+    emit(
+      state.copyWith(currentIndex: 2, isHomeTab: false, isNewProductsTab: true),
+    );
   }
 
-  Future<void> _changeTab(
-    ChangeTabEvent event,
-    Emitter<MainState> emit,
-  ) async {
+  Future<void> _changeTab(ChangeTabEvent event, Emitter<MainState> emit) async {
     final index = event.index;
-    emit(state.copyWith(
-      currentIndex: index,
-      isHomeTab: index == 2,
-      isNewProductsTab: index == 3,
-    ));
+    emit(
+      state.copyWith(
+        currentIndex: index,
+        isHomeTab: index == 2,
+        isNewProductsTab: index == 3,
+      ),
+    );
   }
 }

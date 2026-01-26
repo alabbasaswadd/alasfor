@@ -136,3 +136,53 @@ class MultiWaveClipper extends CustomClipper<Path> {
         oldClipper.waveCount != waveCount;
   }
 }
+
+/// A clipper that creates a sloped shape with the left side going down.
+/// The right side stays at full height while the left side slopes downward.
+class SlopedLeftClipper extends CustomClipper<Path> {
+  /// How much the left side slopes down from the right.
+  final double slopeHeight;
+
+  /// The curve depth at the bottom edge.
+  final double curveDepth;
+
+  const SlopedLeftClipper({
+    this.slopeHeight = 60.0,
+    this.curveDepth = 25.0,
+  });
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+
+    // Start from top-left (sloped down)
+    path.moveTo(0, slopeHeight);
+
+    // Line to top-right (full height)
+    path.lineTo(size.width, 0);
+
+    // Line down right side
+    path.lineTo(size.width, size.height - curveDepth);
+
+    // Create a smooth curved bottom edge that slopes from right to left
+    path.cubicTo(
+      size.width * 0.7,
+      size.height, // First control point - curves down
+      size.width * 0.3,
+      size.height - curveDepth * 1.5, // Second control point - curves up
+      0,
+      size.height - curveDepth + slopeHeight * 0.3, // End point - left side lower
+    );
+
+    // Close the path
+    path.close();
+
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant SlopedLeftClipper oldClipper) {
+    return oldClipper.slopeHeight != slopeHeight ||
+        oldClipper.curveDepth != curveDepth;
+  }
+}

@@ -1,3 +1,6 @@
+import 'package:alasfor/core/constants/app_images.dart';
+import 'package:alasfor/pages/home/model/banner_model.dart';
+import 'package:alasfor/pages/home/model/home_product_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:alasfor/core/bloc/bloc_exports.dart';
 import 'home_event.dart';
@@ -9,7 +12,6 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
     on<GetHomeProductsEvent>(_getProducts);
     on<RefreshHomeEvent>(_refreshHome);
     on<SearchProductsEvent>(_searchProducts);
-    on<ToggleFavoriteEvent>(_toggleFavorite);
   }
 
   Future<void> _getBanners(
@@ -39,19 +41,17 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
 
       // Using mock data for now
       await Future.delayed(const Duration(milliseconds: 300));
-      final banners = BannerModel.getMockBanners();
+      final banners = getMockBanners();
 
-      emit(state.copyWith(
-        isLoading: false,
-        isSuccess: true,
-        banners: banners,
-      ));
+      emit(state.copyWith(isLoading: false, isSuccess: true, banners: banners));
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        isError: true,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          isError: true,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -64,19 +64,19 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
     try {
       // TODO: Replace with actual API call when ready
       await Future.delayed(const Duration(milliseconds: 300));
-      final products = HomeProductModel.getMockProducts();
+      final products = getMockProducts();
 
-      emit(state.copyWith(
-        isLoading: false,
-        isSuccess: true,
-        products: products,
-      ));
+      emit(
+        state.copyWith(isLoading: false, isSuccess: true, products: products),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        isLoading: false,
-        isError: true,
-        errorMessage: e.toString(),
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          isError: true,
+          errorMessage: e.toString(),
+        ),
+      );
     }
   }
 
@@ -102,27 +102,62 @@ class HomeBloc extends BaseBloc<HomeEvent, HomeState> {
     // Filter products based on search query
     debounce('search', () {
       final results = state.products
-          .where((product) =>
-              product.name.toLowerCase().contains(event.query.toLowerCase()))
+          .where(
+            (product) =>
+                product.name.toLowerCase().contains(event.query.toLowerCase()),
+          )
           .toList();
 
       emit(state.copyWith(searchResults: results));
     });
   }
 
-  Future<void> _toggleFavorite(
-    ToggleFavoriteEvent event,
-    Emitter<HomeState> emit,
-  ) async {
-    final updatedProducts = state.products.map((product) {
-      if (product.id == event.productId) {
-        return product.copyWith(isFavorite: !product.isFavorite);
-      }
-      return product;
-    }).toList();
-
-    emit(state.copyWith(products: updatedProducts));
-
-    // TODO: Sync with API
+  // Mock data for testing
+  static List<BannerModel> getMockBanners() {
+    return [
+      BannerModel(
+        id: '1',
+        title: 'جمعة مباركة',
+        description:
+            '(إن أفضل أيامكم يوم الجمعة، فأكثروا علي من الصلاة فيه، فإن صلاتكم معروضة علي)',
+        imageUrl: AppImages.jomaa,
+        rating: 4.8,
+      ),
+      BannerModel(
+        id: '2',
+        title: 'مع بداية عام 2026',
+        description:
+            'تتقدم أسرة العصفور بأصدق التهاني والتمنيات لكم، سائلين الله أن يكون عاما مليئا بالخير، والتفاؤل',
+        imageUrl: AppImages.year,
+        rating: 4.5,
+      ),
+    ];
   }
+}
+
+// Mock data for testing
+List<HomeProductModel> getMockProducts() {
+  return [
+    HomeProductModel(
+      id: '1',
+      name: 'رز أسباني',
+      description: 'لما يكون الأكل طيب أكيد الأكل من عند العصفور',
+      imageUrl: AppImages.camolino2,
+      isFavorite: true,
+    ),
+    HomeProductModel(
+      id: '2',
+      name: 'حلاوة بالفستق',
+      description: 'تمتع بنكهة مميزة ورائعة مع حلاوة العصفور',
+      imageUrl: AppImages.halawa,
+      isFavorite: false,
+    ),
+    HomeProductModel(
+      id: '3',
+      name: 'بقوليات العصفور',
+      description: 'الطعم الأصيل من المكان الأصيل',
+      imageUrl: AppImages.legumes,
+      isFavorite: true,
+    ),
+  ];
 }
