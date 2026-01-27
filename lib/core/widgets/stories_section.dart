@@ -1,4 +1,6 @@
 import 'package:alasfor/core/constants/app_images.dart';
+import 'package:alasfor/core/constants/app_text.dart';
+import 'package:alasfor/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 
 /// Data model for a story item
@@ -33,6 +35,11 @@ class StoriesSection extends StatelessWidget {
       ),
       StoryData(
         name: 'عرض حصري',
+        imageUrl: AppImages.camolino2,
+        isActive: false,
+      ),
+      StoryData(
+        name: 'وصفة شهية',
         imageUrl: AppImages.camolino2,
         isActive: false,
       ),
@@ -88,11 +95,10 @@ class StoriesSection extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           SizedBox(
-            width: 70,
-            child: Text(
+            width: 80,
+            child: AppText.small(
               story.name,
-              style: const TextStyle(fontSize: 10, color: Colors.white),
-              textAlign: TextAlign.center,
+              color: AppColors.white,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

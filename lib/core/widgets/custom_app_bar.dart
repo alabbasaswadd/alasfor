@@ -4,7 +4,6 @@ export 'curved_bottom_navigation_bar.dart';
 export 'clippers/wave_clipper.dart';
 export 'painters/arc_painter.dart';
 export '../constants/app_colors.dart';
-
 import 'package:alasfor/core/constants/app_images.dart';
 import 'package:alasfor/core/constants/app_text.dart';
 import 'package:alasfor/pages/notifications/screen/notifications_screen.dart';
