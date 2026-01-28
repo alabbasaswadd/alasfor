@@ -128,12 +128,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         (index) => AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: state.currentPage == index ? 24 : 8,
+          width: 8,
           height: 8,
           decoration: BoxDecoration(
             color: state.currentPage == index
-                ? AppColors.white
-                : AppColors.white.withOpacity(0.4),
+                ? AppColors.black
+                : AppColors.primary,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -150,7 +150,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: ElevatedButton(
         onPressed: state.isLoading ? null : _nextPage,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.darkGray,
+          backgroundColor: AppColors.black,
           foregroundColor: AppColors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
@@ -193,8 +193,8 @@ class OnboardingPage extends StatelessWidget {
             children: [
               // Main Card (Center)
               Positioned(
-                top: 40,
-                child: _buildProductCard(rotation: -0.5, scale: 1.0, zIndex: 3),
+                top: 50,
+                child: _buildProductCard(rotation: -0.5, scale: 1.1, zIndex: 3),
               ),
               // Right Card
               Positioned(
