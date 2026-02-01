@@ -4,9 +4,5 @@ part 'main_state.freezed.dart';
 
 @freezed
 abstract class MainState with _$MainState {
-  const factory MainState({
-    @Default(3) int currentIndex,
-    @Default(false) bool isHomeTab,
-    @Default(true) bool isNewProductsTab,
-  }) = _MainState;
+  const factory MainState({@Default(2) int currentIndex}) = _MainState;
 }

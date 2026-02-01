@@ -1,4 +1,6 @@
 import 'package:alasfor/core/constants/app_colors.dart';
+import 'package:alasfor/core/constants/app_text.dart';
+import 'package:alasfor/core/widgets/custom_app_bar.dart';
 import 'package:alasfor/core/widgets/custom_bottom_navigation_bar.dart';
 import 'package:alasfor/pages/main/bloc/main_bloc.dart';
 import 'package:alasfor/pages/main/bloc/main_event.dart';
@@ -21,7 +23,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     bloc = MainBloc();
-    bloc.add(const InitMainEvent());
+    bloc.add(const ChangePageEvent(2));
   }
 
   @override
@@ -40,19 +42,19 @@ class _MainScreenState extends State<MainScreen> {
         return Scaffold(
           extendBody: true,
           backgroundColor: AppColors.white,
-
+          appBar: CustomAppBar(),
           body: Stack(
             children: [
               // Custom AppBar with wave pattern
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: _buildCustomAppBar(context),
-              ),
+              // Positioned(
+              //   top: 0,
+              //   left: 0,
+              //   right: 0,
+              //   child: _buildCustomAppBar(context),
+              // ),
 
-              // Page content
-              Positioned.fill(top: 200, child: bloc.pages[state.currentIndex]),
+              // Page content 
+              Positioned.fill(top: 0, child: bloc.pages[state.currentIndex]),
 
               // Bottom navigation
               Positioned(
@@ -62,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
                 child: CustomBottomNavigationBar(
                   currentIndex: state.currentIndex,
                   onTap: (index) {
-                    bloc.add(ChangeTabEvent(index));
+                    bloc.add(ChangePageEvent(index));
                   },
                 ),
               ),
@@ -189,14 +191,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           const SizedBox(width: 10),
           // App name
-          const Text(
-            'الأصفر',
-            style: TextStyle(
-              color: AppColors.primary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          const AppText.body('الأصفر', color: AppColors.primary),
         ],
       ),
     );

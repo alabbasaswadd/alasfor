@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MainState {
 
- int get currentIndex; bool get isHomeTab; bool get isNewProductsTab;
+ int get currentIndex;
 /// Create a copy of MainState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $MainStateCopyWith<MainState> get copyWith => _$MainStateCopyWithImpl<MainState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MainState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.isHomeTab, isHomeTab) || other.isHomeTab == isHomeTab)&&(identical(other.isNewProductsTab, isNewProductsTab) || other.isNewProductsTab == isNewProductsTab));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MainState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentIndex,isHomeTab,isNewProductsTab);
+int get hashCode => Object.hash(runtimeType,currentIndex);
 
 @override
 String toString() {
-  return 'MainState(currentIndex: $currentIndex, isHomeTab: $isHomeTab, isNewProductsTab: $isNewProductsTab)';
+  return 'MainState(currentIndex: $currentIndex)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $MainStateCopyWith<$Res>  {
   factory $MainStateCopyWith(MainState value, $Res Function(MainState) _then) = _$MainStateCopyWithImpl;
 @useResult
 $Res call({
- int currentIndex, bool isHomeTab, bool isNewProductsTab
+ int currentIndex
 });
 
 
@@ -62,12 +62,10 @@ class _$MainStateCopyWithImpl<$Res>
 
 /// Create a copy of MainState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentIndex = null,Object? isHomeTab = null,Object? isNewProductsTab = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentIndex = null,}) {
   return _then(_self.copyWith(
 currentIndex: null == currentIndex ? _self.currentIndex : currentIndex // ignore: cast_nullable_to_non_nullable
-as int,isHomeTab: null == isHomeTab ? _self.isHomeTab : isHomeTab // ignore: cast_nullable_to_non_nullable
-as bool,isNewProductsTab: null == isNewProductsTab ? _self.isNewProductsTab : isNewProductsTab // ignore: cast_nullable_to_non_nullable
-as bool,
+as int,
   ));
 }
 
@@ -152,10 +150,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentIndex,  bool isHomeTab,  bool isNewProductsTab)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentIndex)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _MainState() when $default != null:
-return $default(_that.currentIndex,_that.isHomeTab,_that.isNewProductsTab);case _:
+return $default(_that.currentIndex);case _:
   return orElse();
 
 }
@@ -173,10 +171,10 @@ return $default(_that.currentIndex,_that.isHomeTab,_that.isNewProductsTab);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentIndex,  bool isHomeTab,  bool isNewProductsTab)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentIndex)  $default,) {final _that = this;
 switch (_that) {
 case _MainState():
-return $default(_that.currentIndex,_that.isHomeTab,_that.isNewProductsTab);case _:
+return $default(_that.currentIndex);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -193,10 +191,10 @@ return $default(_that.currentIndex,_that.isHomeTab,_that.isNewProductsTab);case 
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentIndex,  bool isHomeTab,  bool isNewProductsTab)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentIndex)?  $default,) {final _that = this;
 switch (_that) {
 case _MainState() when $default != null:
-return $default(_that.currentIndex,_that.isHomeTab,_that.isNewProductsTab);case _:
+return $default(_that.currentIndex);case _:
   return null;
 
 }
@@ -208,12 +206,10 @@ return $default(_that.currentIndex,_that.isHomeTab,_that.isNewProductsTab);case 
 
 
 class _MainState implements MainState {
-  const _MainState({this.currentIndex = 3, this.isHomeTab = false, this.isNewProductsTab = true});
+  const _MainState({this.currentIndex = 2});
   
 
 @override@JsonKey() final  int currentIndex;
-@override@JsonKey() final  bool isHomeTab;
-@override@JsonKey() final  bool isNewProductsTab;
 
 /// Create a copy of MainState
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +221,16 @@ _$MainStateCopyWith<_MainState> get copyWith => __$MainStateCopyWithImpl<_MainSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MainState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.isHomeTab, isHomeTab) || other.isHomeTab == isHomeTab)&&(identical(other.isNewProductsTab, isNewProductsTab) || other.isNewProductsTab == isNewProductsTab));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MainState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentIndex,isHomeTab,isNewProductsTab);
+int get hashCode => Object.hash(runtimeType,currentIndex);
 
 @override
 String toString() {
-  return 'MainState(currentIndex: $currentIndex, isHomeTab: $isHomeTab, isNewProductsTab: $isNewProductsTab)';
+  return 'MainState(currentIndex: $currentIndex)';
 }
 
 
@@ -245,7 +241,7 @@ abstract mixin class _$MainStateCopyWith<$Res> implements $MainStateCopyWith<$Re
   factory _$MainStateCopyWith(_MainState value, $Res Function(_MainState) _then) = __$MainStateCopyWithImpl;
 @override @useResult
 $Res call({
- int currentIndex, bool isHomeTab, bool isNewProductsTab
+ int currentIndex
 });
 
 
@@ -262,12 +258,10 @@ class __$MainStateCopyWithImpl<$Res>
 
 /// Create a copy of MainState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentIndex = null,Object? isHomeTab = null,Object? isNewProductsTab = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentIndex = null,}) {
   return _then(_MainState(
 currentIndex: null == currentIndex ? _self.currentIndex : currentIndex // ignore: cast_nullable_to_non_nullable
-as int,isHomeTab: null == isHomeTab ? _self.isHomeTab : isHomeTab // ignore: cast_nullable_to_non_nullable
-as bool,isNewProductsTab: null == isNewProductsTab ? _self.isNewProductsTab : isNewProductsTab // ignore: cast_nullable_to_non_nullable
-as bool,
+as int,
   ));
 }
 

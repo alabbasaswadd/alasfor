@@ -10,8 +10,7 @@ import 'main_state.dart';
 
 class MainBloc extends BaseBloc<MainEvent, MainState> {
   MainBloc() : super(const MainState()) {
-    on<InitMainEvent>(_init);
-    on<ChangeTabEvent>(_changePage);
+    on<ChangePageEvent>(_changePage);
   }
   final pages = [
     const ProfileScreen(),
@@ -20,19 +19,11 @@ class MainBloc extends BaseBloc<MainEvent, MainState> {
     const NewProductsScreen(),
     const ScannerScreen(),
   ];
-  // Widget _buildCurrentPage(int index) {
-
-  //   return pages[index < pages.length ? index : 0];
-  // }
-  Future<void> _init(InitMainEvent event, Emitter<MainState> emit) async {
-    emit(state.copyWith(currentIndex: 2, isHomeTab: true));
-  }
 
   Future<void> _changePage(
-    ChangeTabEvent event,
+    ChangePageEvent event,
     Emitter<MainState> emit,
   ) async {
-    final index = event.index;
-    emit(state.copyWith(currentIndex: index));
+    emit(state.copyWith(currentIndex: event.index));
   }
 }

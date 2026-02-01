@@ -4,11 +4,7 @@ abstract class MainEvent extends BaseEvent {
   const MainEvent();
 }
 
-class ChangeTabEvent extends MainEvent {
+class ChangePageEvent extends MainEvent {
   final int index;
-  const ChangeTabEvent(this.index);
-}
-
-class InitMainEvent extends MainEvent {
-  const InitMainEvent();
+  const ChangePageEvent(this.index);
 }
