@@ -44,7 +44,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return ClipPath(
-      clipper: const SmoothWaveClipper(waveDepth: 30.0),
+      clipper: HeaderCurveClipper(),
       child: Container(
         height: preferredSize.height + statusBarHeight,
         decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
@@ -116,4 +116,47 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(child != null ? 220.0 : 220.0);
+}
+
+class HeaderCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, size.height + 0);
+    path.quadraticBezierTo(
+      size.width * 0.23,
+      size.height - 108, // Control point 1
+      size.width * 0.6,
+      size.height - 108, // Middle point
+    );
+    path.quadraticBezierTo(
+      size.width * 0.89,
+      size.height - 107, // Control point 2
+      size.width,
+      size.height - 145, // End point
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> old) => false;
+}
+
+// Bottom nav clipper
+class BottomNavClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.moveTo(0, size.height);
+    path.lineTo(0, 40);
+    path.quadraticBezierTo(size.width / 2, -38, size.width, 40);
+    path.lineTo(size.width, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> old) => false;
 }

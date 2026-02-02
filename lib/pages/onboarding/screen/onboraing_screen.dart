@@ -1,7 +1,7 @@
 import 'package:alasfor/core/constants/app_colors.dart';
 import 'package:alasfor/core/constants/app_images.dart';
 import 'package:alasfor/core/constants/app_text.dart';
-import 'package:alasfor/main.dart';
+import 'package:alasfor/pages/main/screen/main_screen.dart';
 import 'package:alasfor/pages/onboarding/bloc/onboarding_bloc.dart';
 import 'package:alasfor/pages/onboarding/bloc/onboarding_event.dart';
 import 'package:alasfor/pages/onboarding/bloc/onboarding_state.dart';
@@ -11,107 +11,121 @@ import 'package:go_router/go_router.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
-  static const String id = '/onboarding';
+  static String id = "/onboarding";
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  late OnboardingBloc _bloc;
-  final PageController _pageController = PageController();
+  late final OnboardingBloc bloc;
+  late final PageController pageController;
 
   @override
   void initState() {
     super.initState();
-    _bloc = OnboardingBloc();
-    _bloc.add(const InitOnboardingEvent());
+    bloc = OnboardingBloc();
+    pageController = PageController();
+    bloc.add(const InitOnboardingEvent());
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
-    _bloc.close();
+    bloc.close();
+    pageController.dispose();
     super.dispose();
-  }
-
-  void _onPageChanged(int index) {
-    _bloc.add(PageChangedEvent(index));
-  }
-
-  void _nextPage() {
-    final state = _bloc.state;
-    if (state.currentPage < state.pages.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
-    _bloc.add(const NextPageEvent());
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _bloc,
-      child: BlocConsumer<OnboardingBloc, OnboardingState>(
-        listener: (context, state) {
-          if (state.shouldNavigateToMain) {
-            navigatorKey.currentContext?.go('/main');
-          }
-        },
+    return BlocListener<OnboardingBloc, OnboardingState>(
+      bloc: bloc,
+      listener: (context, state) {
+        if (state.shouldNavigateToMain) {
+          context.go(MainScreen.id);
+        }
+      },
+      child: BlocBuilder<OnboardingBloc, OnboardingState>(
+        bloc: bloc,
         builder: (context, state) {
-          if (state.pages.isEmpty) {
-            return const Scaffold(
-              backgroundColor: AppColors.primary,
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
+          final size = MediaQuery.of(context).size;
+
+          // RED COLORS (from mockup)
 
           return Scaffold(
             body: Stack(
               children: [
-                // Background Design
-                CustomPaint(
-                  size: Size(
-                    MediaQuery.of(context).size.width,
-                    MediaQuery.of(context).size.height,
-                  ),
-                  painter: OnboardingBackgroundPainter(),
-                ),
-                // Content
-                SafeArea(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      // Logo
-                      Image.asset(AppImages.logo),
-                      // PageView
-                      Expanded(
-                        child: PageView.builder(
-                          controller: _pageController,
-                          onPageChanged: _onPageChanged,
-                          itemCount: state.pages.length,
-                          itemBuilder: (context, index) {
-                            return OnboardingPage(
-                              content: state.pages[index],
-                              pageIndex: index,
-                            );
-                          },
-                        ),
-                      ),
-                      // Page Indicators
-                      _buildPageIndicators(state),
-                      const SizedBox(height: 24),
-                      // Start Button
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                        child: _buildStartButton(state),
-                      ),
-                      const SizedBox(height: 32),
-                    ],
+                // 1. BASE YELLOW GRADIENT
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: bloc.finalYellow,
+                    ),
                   ),
                 ),
+
+                // 2. TOP LEFT CURVED SHAPE
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: TopLeftCurvePainter(bloc.leftRed),
+                  ),
+                ),
+
+                // 3. TOP RIGHT CURVED SHAPE
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: TopRightCurvePainter(bloc.rightRed),
+                  ),
+                ),
+
+                // 4. BOTTOM RED CIRCLE
+                Positioned(
+                  bottom: -size.height * 0.32,
+                  left: -size.width * 0.21,
+                  right: -size.width * 0.14,
+                  child: Container(
+                    width: size.width * 1.50,
+                    height: size.width * 1.50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.centerRight,
+                        end: Alignment.centerLeft,
+                        colors: bloc.bottomRed,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 5. WHITE CIRCULAR LINES (TOP & BOTTOM)
+                Positioned.fill(
+                  child: CustomPaint(painter: CircleArcPainter()),
+                ),
+
+                // 6. LOGO AT TOP
+                Positioned(
+                  top: size.height * 0.038,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: SizedBox(
+                      width: 132,
+                      height: 99,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(AppImages.logo, fit: BoxFit.cover),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 7. PRODUCT CARDS WITH PAGEVIEW
+                _buildProductCardsPageView(size, state),
+
+                // 8. TEXT & ACTION OVERLAY
+                _buildOverlay(size, context, state),
               ],
             ),
           );
@@ -120,254 +134,356 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildPageIndicators(OnboardingState state) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        state.pages.length,
-        (index) => AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: state.currentPage == index
-                ? AppColors.black
-                : AppColors.primary,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-      ),
+  Widget _buildProductCardsPageView(Size size, OnboardingState state) {
+    if (state.pages.isEmpty) {
+      return _buildProductCards(size, null);
+    }
+
+    return PageView.builder(
+      controller: pageController,
+      itemCount: state.pages.length,
+      onPageChanged: (index) {
+        bloc.add(PageChangedEvent(index));
+      },
+      itemBuilder: (context, index) {
+        return _buildProductCards(size, state.pages[index]);
+      },
     );
   }
 
-  Widget _buildStartButton(OnboardingState state) {
-    final isLastPage = state.currentPage == state.pages.length - 1;
+  Widget _buildProductCards(Size size, OnboardingContent? content) {
+    final imagePath = content?.imagePath ?? AppImages.rice;
 
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: state.isLoading ? null : _nextPage,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.black,
-          foregroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          elevation: 0,
-        ),
-        child: state.isLoading
-            ? const CircularProgressIndicator(color: AppColors.white)
-            : AppText.custom(
-                isLastPage ? 'ابدأ الآن' : 'التالي',
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.white,
-              ),
-      ),
-    );
-  }
-}
-
-class OnboardingPage extends StatelessWidget {
-  final OnboardingContent content;
-  final int pageIndex;
-
-  const OnboardingPage({
-    super.key,
-    required this.content,
-    required this.pageIndex,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Stack(
       children: [
-        // Product Cards Display
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.4,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Main Card (Center)
-              Positioned(
-                top: 50,
-                child: _buildProductCard(rotation: -0.5, scale: 1.1, zIndex: 3),
-              ),
-              // Right Card
-              Positioned(
-                right: -110,
-                top: -50,
-                child: _buildProductCard(rotation: 0.2, scale: 0.5, zIndex: 4),
-              ),
-              // Left Card
-              Positioned(
-                left: -120,
-                top: 100,
-                child: _buildProductCard(rotation: -0.8, scale: 0.7, zIndex: 1),
-              ),
-            ],
+        // LEFT CARD (behind, tilted)
+        Positioned(
+          top: size.height * 0.49,
+          left: -size.width * 0.114,
+          child: Transform.rotate(
+            angle: -0.65,
+            child: _productCard(
+              width: size.width * 0.22,
+              height: size.width * 0.27,
+              redBarHeight: 14,
+              imagePath: AppImages.tona,
+            ),
           ),
         ),
-        const SizedBox(height: 40),
-        // Text Content
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            children: [
-              AppText.large(
-                content.title,
-                textAlign: TextAlign.center,
-                textDirection: TextDirection.rtl,
-                color: AppColors.white,
-                height: 1.4,
+
+        // RIGHT CARD (behind, tilted)
+        Positioned(
+          top: size.height * 0.28,
+          right: -size.width * 0.114,
+          child: Transform.rotate(
+            angle: 0.089,
+            child: _productCard(
+              width: size.width * 0.32,
+              height: size.width * 0.365,
+              redBarHeight: 19,
+              imagePath: AppImages.mushroom,
+              padding: 6,
+            ),
+          ),
+        ),
+
+        // CENTER MAIN CARD (front, prominent)
+        Positioned(
+          top: size.height * 0.345,
+          left: (size.width - size.width * 0.575) / 2,
+          child: Container(
+            width: size.width * 0.575,
+            height: size.width * 0.7,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.22),
+                  blurRadius: 25,
+                  offset: const Offset(0, 15),
+                  spreadRadius: 8,
+                ),
+              ],
+            ),
+            child: Transform.rotate(
+              angle: -0.235,
+              child: _productCard(
+                width: size.width * 0.575,
+                height: size.width * 0.7,
+                redBarHeight: 34,
+                isMain: false,
+                imagePath: imagePath,
+                padding: 10,
               ),
-              const SizedBox(height: 16),
-              AppText.medium(content.subtitle, color: AppColors.white),
-            ],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildProductCard({
-    required double rotation,
-    required double scale,
-    required int zIndex,
+  Widget _productCard({
+    required double width,
+    required double height,
+    required double redBarHeight,
+    required String imagePath,
+    bool isMain = false,
+    double padding = 5,
   }) {
-    return Transform.scale(
-      scale: scale,
-      child: Transform.rotate(
-        angle: rotation,
-        child: Container(
-          width: 200,
-          height: 240,
-          decoration: BoxDecoration(
-            color: AppColors.lightGray,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+    return Container(
+      width: width,
+      height: height,
+      padding: EdgeInsets.all(padding),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD8D8D8),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 10),
+            spreadRadius: 2,
           ),
-          child: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [Center(child: Image.asset(AppImages.rice))],
-                    ),
-                  ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(10),
+                  bottom: Radius.circular(5),
                 ),
               ),
-              Container(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(10),
+                  bottom: Radius.circular(5),
+                ),
+                child: Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(
+                      child: Icon(Icons.image, color: Colors.grey, size: 40),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: isMain ? 12 : 8),
+          Container(
+            height: redBarHeight,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD30000),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOverlay(Size size, BuildContext context, OnboardingState state) {
+    final currentContent =
+        state.pages.isNotEmpty && state.currentPage < state.pages.length
+        ? state.pages[state.currentPage]
+        : null;
+
+    final title =
+        currentContent?.title ?? "من هنا تبدأ رحلتك مع منتجات العصفور.\u200F";
+    final subtitle =
+        currentContent?.subtitle ?? "جودة نعرفها، ونشاركها معك بكل ثقة.\u200F";
+    final isLastPage = state.currentPage == state.pages.length - 1;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 25, left: 31, right: 31),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppText.large(
+              title,
+              fontWeight: FontWeight.w500,
+              textAlign: TextAlign.center,
+              color: AppColors.white,
+            ),
+            const SizedBox(height: 13),
+            AppText.medium(
+              subtitle,
+              textAlign: TextAlign.center,
+              color: AppColors.white,
+            ),
+            const SizedBox(height: 10),
+            // Page Indicators
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                state.pages.isEmpty ? 3 : state.pages.length,
+                (index) => _dot(index == state.currentPage),
+              ),
+            ),
+            const SizedBox(height: 25),
+            GestureDetector(
+              onTap: state.isLoading
+                  ? null
+                  : () {
+                      if (isLastPage || state.pages.isEmpty) {
+                        bloc.add(const CompleteOnboardingEvent());
+                      } else {
+                        pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    },
+              child: Container(
+                height: 48,
                 width: double.infinity,
-                height: 40,
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0B1211),
+                  borderRadius: BorderRadius.circular(29),
+                ),
+                child: Center(
+                  child: state.isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : AppText.medium(
+                          isLastPage || state.pages.isEmpty
+                              ? "ابدء الأن"
+                              : "التالي",
+                          color: AppColors.white,
+                        ),
                 ),
               ),
+            ),
+            // Skip button (only show if not on last page)
+            if (!isLastPage && state.pages.isNotEmpty) ...[
+              const SizedBox(height: 12),
             ],
-          ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _dot(bool active) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: active ? Colors.black : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(10),
       ),
     );
   }
 }
 
-class OnboardingBackgroundPainter extends CustomPainter {
+class CircleArcPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..color = const Color(0xFFFFE5CC)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
 
-    // Red background
-    paint.color = AppColors.primary;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+    final topRect = Rect.fromCircle(
+      center: Offset(size.width * 0.52, size.height * 0.024),
+      radius: size.width * 0.584,
+    );
+    canvas.drawArc(topRect, 3.0, -2.5, false, paint);
 
-    // Top left curve
-    paint.color = AppColors.redDark;
-    final path1 = Path();
-    path1.moveTo(0, 0);
-    path1.quadraticBezierTo(
-      size.width * 0.3,
-      size.height * 0.15,
-      size.width * 0.5,
-      size.height * 0.12,
+    final bottomRect = Rect.fromCircle(
+      center: Offset(size.width * 0.85, size.height * 1.05),
+      radius: size.width * 0.97,
     );
-    path1.lineTo(0, size.height * 0.15);
-    path1.close();
-    canvas.drawPath(path1, paint);
+    canvas.drawArc(bottomRect, 3.14, 3.14, false, paint);
+  }
 
-    // Large red circle (top right)
-    paint.color = AppColors.redDark;
-    canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.15),
-      size.width * 0.4,
-      paint,
-    );
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
-    // Yellow area (middle)
-    paint.color = AppColors.secondary;
-    final path2 = Path();
-    path2.moveTo(0, size.height * 0.3);
-    path2.quadraticBezierTo(
-      size.width * 0.3,
-      size.height * 0.4,
-      size.width,
-      size.height * 0.35,
-    );
-    path2.lineTo(size.width, size.height * 0.65);
-    path2.quadraticBezierTo(
-      size.width * 0.7,
-      size.height * 0.6,
-      0,
-      size.height * 0.7,
-    );
-    path2.close();
-    canvas.drawPath(path2, paint);
+class TopRightCurvePainter extends CustomPainter {
+  final List<Color> colors;
 
-    // Bottom red circles
-    paint.color = AppColors.redDark;
-    canvas.drawCircle(
-      Offset(size.width * 0.3, size.height * 0.85),
-      size.width * 0.35,
-      paint,
-    );
+  TopRightCurvePainter(this.colors);
 
-    // White curve overlay
-    paint.color = AppColors.white.withOpacity(0.1);
-    final path3 = Path();
-    path3.moveTo(0, size.height * 0.25);
-    path3.quadraticBezierTo(
-      size.width * 0.5,
-      size.height * 0.35,
-      size.width,
-      size.height * 0.3,
-    );
-    path3.lineTo(size.width, size.height * 0.35);
-    path3.quadraticBezierTo(
-      size.width * 0.5,
-      size.height * 0.4,
-      0,
-      size.height * 0.3,
-    );
-    path3.close();
-    canvas.drawPath(path3, paint);
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(size.width, size.height * 0.14)
+      ..cubicTo(
+        size.width * 0.93,
+        size.height * 0.28,
+        size.width * 0.20,
+        size.height * 0.35,
+        size.width * 0.02,
+        0,
+      )
+      ..lineTo(size.width, 0)
+      ..close();
+
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+        colors: colors,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.4))
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class TopLeftCurvePainter extends CustomPainter {
+  final List<Color> colors;
+
+  TopLeftCurvePainter(this.colors);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, size.height * 0.318)
+      ..cubicTo(
+        size.width * 0.75,
+        size.height * 0.525,
+        size.width * 1.11,
+        size.height * 0.03,
+        size.width * 0.99,
+        0,
+      )
+      ..lineTo(0, 0)
+      ..close();
+
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.bottomRight,
+        end: Alignment.topLeft,
+        colors: colors,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.5))
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(path, paint);
   }
 
   @override
