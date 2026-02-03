@@ -12,6 +12,7 @@ class DioClient {
     dio = Dio(
       BaseOptions(
         baseUrl: "https://fakestoreapi.com",
+        // baseUrl: "https://familyelasfour.com/api",
         connectTimeout: const Duration(milliseconds: 5000),
         receiveTimeout: const Duration(milliseconds: 5000),
       ),
