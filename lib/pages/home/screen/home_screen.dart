@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildPromoBanner(),
+                    // _buildPromoBanner(),
                     _buildSearchBar(),
                     const SizedBox(height: 16),
 

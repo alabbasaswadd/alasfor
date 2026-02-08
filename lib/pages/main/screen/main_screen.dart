@@ -1,7 +1,9 @@
 import 'package:alasfor/core/constants/app_colors.dart';
+import 'package:alasfor/core/constants/app_images.dart';
 import 'package:alasfor/core/constants/app_text.dart';
 import 'package:alasfor/core/widgets/custom_app_bar.dart';
 import 'package:alasfor/core/widgets/custom_bottom_navigation_bar.dart';
+import 'package:alasfor/core/widgets/stories_section.dart';
 import 'package:alasfor/pages/main/bloc/main_bloc.dart';
 import 'package:alasfor/pages/main/bloc/main_event.dart';
 import 'package:alasfor/pages/main/bloc/main_state.dart';
@@ -42,18 +44,18 @@ class _MainScreenState extends State<MainScreen> {
         return Scaffold(
           extendBody: true,
           backgroundColor: AppColors.white,
-          appBar: CustomAppBar(),
+          appBar: CustomAppBar(
+            child: state.currentIndex == 2
+                ? storiesSection()
+                : state.currentIndex == 3
+                ? _buildSearchBar()
+                : null,
+          ),
           body: Stack(
             children: [
               // Custom AppBar with wave pattern
-              // Positioned(
-              //   top: 0,
-              //   left: 0,
-              //   right: 0,
-              //   child: _buildCustomAppBar(context),
-              // ),
-
-              // Page content 
+              // Positioned.fill(top: 0, left: 0, right: 0, child: CustomAppBar()),
+              // Page content
               Positioned.fill(top: 0, child: bloc.pages[state.currentIndex]),
 
               // Bottom navigation
@@ -75,43 +77,170 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildCustomAppBar(BuildContext context) {
+  Widget storiesSection() {
+    final stories = [
+      StoryData(
+        name: 'أفضل العروض',
+        imageUrl: AppImages.zattar,
+        isActive: true,
+      ),
+      StoryData(
+        name: 'شاهد المسابقة',
+        imageUrl: AppImages.halawa,
+        isActive: false,
+      ),
+      StoryData(name: 'عرض حصري', imageUrl: AppImages.tea, isActive: false),
+      StoryData(name: 'وصفة شهية', imageUrl: AppImages.tona, isActive: false),
+      StoryData(name: 'وصفة شهية', imageUrl: AppImages.dates, isActive: false),
+    ];
+
     return SizedBox(
-      height: 220,
-      child: Stack(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: stories.length,
+        itemBuilder: (context, index) {
+          return _buildStoryItem(stories[index]);
+        },
+      ),
+    );
+  }
+
+  Widget _buildStoryItem(StoryData story) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 12),
+      child: Column(
         children: [
-          // Wave background
-          CustomPaint(
-            painter: WaveAppBarPainter(),
-            child: const SizedBox(width: double.infinity, height: 220),
-          ),
-
-          // AppBar content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                children: [
-                  // Top row: Notification - Logo - Profile
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Notifications icon (left)
-                      _buildNotificationButton(),
-
-                      // Logo in pill container (center)
-                      _buildLogoPill(),
-
-                      // Profile picture (right)
-                      _buildProfileAvatar(),
-                    ],
-                  ),
-                ],
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: story.isActive
+                  ? LinearGradient(
+                      colors: [AppColors.secondary, AppColors.primary],
+                    )
+                  : null,
+              border: !story.isActive
+                  ? Border.all(color: Colors.white.withOpacity(0.5), width: 2)
+                  : null,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+              ),
+              child: CircleAvatar(
+                radius: 28,
+                // backgroundImage: NetworkImage(story.imageUrl),
+                child: Image.asset(AppImages.camolino),
               ),
             ),
           ),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: 80,
+            child: AppText.small(
+              story.name,
+              color: AppColors.white,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Column(
+      children: [
+        SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 5,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.secondary,
+                          offset: Offset(0, -2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, color: Colors.grey[400], size: 22),
+                        const SizedBox(width: 12),
+                        const AppText.body('ابحث عن منتج'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 1,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.secondary, AppColors.goldDark],
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Icon(Icons.tune, color: AppColors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomAppBar(BuildContext context) {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+
+    return ClipPath(
+      clipper: HeaderCurveClipper(),
+      child: Container(
+        height: 220 + statusBarHeight,
+        decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: statusBarHeight + 8,
+            left: 16,
+            right: 16,
+          ),
+          child: Column(
+            children: [
+              // Top row: Notification - Logo - Profile
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildNotificationButton(),
+                  _buildLogoPill(),
+                  _buildProfileAvatar(),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+              // childWidgetHere
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -155,6 +284,81 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPromoBanner() {
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xFFFDB913), Color(0xFFF9E79F)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: AppText.medium(
+                            'اختاروا الجودة... واختاروا حبّة بتحكوا عنها!',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.shopping_cart_outlined,
+                          color: AppColors.redExtraDeep,
+                        ),
+                        const SizedBox(width: 6),
+                        const AppText.body(
+                          'عرض تفاصيل المنتج',
+                          maxLines: 2,
+                          color: AppColors.redExtraDeep,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 120,
+                decoration: const BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(100),
+                    bottomRight: Radius.circular(100),
+                  ),
+                ),
+                child: Image.asset(AppImages.camolino, fit: BoxFit.fill),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
